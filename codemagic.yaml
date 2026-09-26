@@ -16,11 +16,11 @@ workflows:
       - name: Flutter paketlarni o'rnatish
         script: |
           flutter packages pub get
-      - name: iOS uchun IPA yig'ish (bez podpisi)
+      - name: SBORKA iOS (Bez sertifikatov)
         script: |
-          flutter build ipa --release --no-codesign
+          flutter build ios --release --no-codesign
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/iphoneos/*.app
       - /tmp/xcodebuild_logs/*.log
     publishing:
       email:
