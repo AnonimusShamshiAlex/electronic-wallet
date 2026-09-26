@@ -12,20 +12,13 @@ workflows:
         BUNDLE_ID: "com.woodera.elektronhamyon"
         XCODE_WORKSPACE: "Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.woodera.elektronhamyon
     scripts:
       - name: Flutter paketlarni o'rnatish
         script: |
           flutter packages pub get
-      - name: Xcode uchun signing profilini sozlash
+      - name: iOS uchun IPA yig'ish (bez podpisi)
         script: |
-          xcode-project use-profiles
-      - name: iOS uchun IPA yig'ish (release)
-        script: |
-          flutter build ipa --release \
-            --export-options-plist=/Users/builder/export_options.plist
+          flutter build ipa --release --no-codesign
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
