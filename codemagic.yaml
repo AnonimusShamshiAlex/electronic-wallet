@@ -1,0 +1,81 @@
+workflows:
+  # ============== ANDROID ==============
+  android-workflow:
+    name: Elektron Hamyon - Android
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+      vars:
+        PACKAGE_NAME: "com.woodera.elektronhamyon"
+      # Play Store'ga chiqarish uchun (ixtiyoriy): Codemagic UI -> Teams ->
+      # Code signing identities -> Android keystore bo'limida keystore
+      # yuklab, quyidagi environment group nomini shu yerga yozing:
+      # groups:
+      #   - google_play
+    scripts:
+      - name: Flutter paketlarni o'rnatish
+        script: |
+          flutter packages pub get
+      - name: Android uchun APK yig'ish (release)
+        script: |
+          flutter build apk --release
+      - name: Android uchun AAB yig'ish (Play Store uchun, release)
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+    publishing:
+      email:
+        recipients:
+          - sizning-email@example.com
+        notify:
+          success: true
+          failure: true
+
+  # ============== IOS ==============
+  ios-workflow:
+    name: Elektron Hamyon - iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_ID: "com.woodera.elektronhamyon"
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+      # Codemagic UI'dagi "Code signing identities" bo'limida
+      # Apple Developer akkauntingizni ulaganingizdan so'ng, bu yerda
+      # avtomatik signing yoqiladi (App Store Connect integratsiyasi orqali).
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.woodera.elektronhamyon
+    scripts:
+      - name: Flutter paketlarni o'rnatish
+        script: |
+          flutter packages pub get
+      - name: Xcode uchun signing profilini sozlash
+        script: |
+          xcode-project use-profiles
+      - name: iOS uchun IPA yig'ish (release)
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - sizning-email@example.com
+        notify:
+          success: true
+          failure: true
+      # Ixtiyoriy: to'g'ridan-to'g'ri TestFlight'ga yuklash uchun
+      # app_store_connect bo'limini yoqing (Apple API kaliti kerak):
+      # app_store_connect:
+      #   auth: integration
+      #   submit_to_testflight: true
