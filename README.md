@@ -1,73 +1,88 @@
-# Elektron Hamyon (iOS, Flutter + Codemagic)
 
-## Ilova nima qiladi
+------------------------------
+## 📊 Электронный кошелёк (Android, Flutter + Codemagic)## 💡 Что делает приложение
+Каждый раз, когда вы добавляете деньги, сумма автоматически распределяется на 4 части:
 
-Har safar pul qo'shganingizda summa avtomatik 4 qismga bo'linadi:
-
-| Ulush | Foiz | Vazifasi |
+| Доля | Процент | Назначение |
 |---|---|---|
-| Kunlik xarajat | **50%** | 30 kunga bo'linib, har kuni sarflash uchun limit hisoblanadi |
-| Jamg'arma | **25%** | alohida "cho'ntak" sifatida saqlanadi |
-| Zaxira | **15%** | alohida "cho'ntak" sifatida saqlanadi |
-| Boshqa ehtiyojlar | **10%** | alohida "cho'ntak" sifatida saqlanadi |
+| Ежедневные расходы | 50% | Делится на 30 дней и формирует дневной лимит |
+| Накопления | 25% | Хранятся отдельно как автономный «карман» |
+| Резерв | 15% | Хранятся отдельно как автономный «карман» |
+| Другие потребности | 10% | Хранятся отдельно как автономный «карман» |
 
-**Kunlik 50% qismning mantig'i:**
-- Byudjet 30 kunga bo'linadi -> `kunlik limit = byudjet / 30`.
-- Har kuni sarflagan summangizni kiritasiz. Agar kunlik limitdan **oshib ketsangiz**, ilova buni "limitdan oshgan" deb ko'rsatib boradi.
-- Agar kun oxirigacha limitni **to'liq sarflamasangiz**, qolgan mablag' yig'ilib boraveradi (bekor bo'lib ketmaydi).
-- 30 kun tugagach, o'sha davrdan **qolgan summa** avtomatik yangi 30 kunlik davrga o'tadi va xuddi shu tarzda qaytadan 30 kunga bo'linadi.
-- Davr davomida yangi pul qo'shsangiz, u faqat **joriy 30 kunlik davr** byudjetiga qo'shiladi (limit shu davr uchun qayta hisoblanadi); kelgusi davr tugagach xuddi shu uslub bilan (qolgan + yangi tushum) qaytadan taqsimlanadi.
+## 🔎 Логика ежедневной части (50%)
 
-**Dizayn:** to'q yashil (`#0B4D2C`) + oq fon, iOS uslubidagi toza interfeys.
+* Бюджет на 30 дней делится на 30 → получается дневной лимит.
+* Каждый день пользователь вводит потраченную сумму.
+* Если расходы превышают дневной лимит, приложение показывает превышение лимита и продолжает учитывать его.
+* Если за день потрачено меньше дневного лимита, оставшиеся деньги не сгорают, а накапливаются.
+* После окончания 30-дневного периода оставшаяся сумма автоматически переносится в новый 30-дневный период и снова рассчитывается.
+* Если в течение текущего 30-дневного периода пользователь добавляет новые деньги, они добавляются только в текущий период, после чего лимит пересчитывается.
+* После окончания текущего периода следующий период рассчитывается по тому же принципу: остаток + новые поступления.
 
-## Loyiha tuzilishi
+⚠️ Важная особенность расчёта: Если в конце 30-дневного периода расходы превысили доступный бюджет и образовался отрицательный остаток, следующий период начинается с 0, а сумма превышения отображается отдельно как: «Превышение лимита предыдущего периода». Приложение сохраняет историю превышения и не переносит отрицательный баланс в новый период.
+------------------------------
+## ✨ Дизайн и Платформа
+Приложение выполнено в современном стиле:
 
-```
-elektron_hamyon/
-  pubspec.yaml          -> paketlar (shared_preferences, intl)
-  lib/
-    main.dart           -> interfeys (UI), rang sxemasi
-    wallet_engine.dart   -> butun hisob-kitob mantig'i va saqlash
-  codemagic.yaml         -> Codemagic uchun iOS build sozlamasi
-```
+* Основной цвет: Тёмно-зелёный #0B4D2C.
+* Фон: Чистый белый.
+* Интерфейс: Простой, интуитивный, с крупными полями ввода данных.
+* Целевая платформа: Android (работает на любых смартфонах Android без ограничений по времени).
+* Хранение данных: Локально на устройстве с помощью пакета shared_preferences. Интернет для работы кошелька не требуется.
 
-> Eslatma: bu paket `ios/` Xcode loyihasi papkasini o'z ichiga olmaydi -
-> chunki u ko'plab avtomatik generatsiya qilinadigan fayllardan iborat.
-> `codemagic.yaml`dagi birinchi skript build boshlanishida
-> `flutter create --platforms=ios .` buyrug'ini avtomatik ishga tushirib,
-> shu papkani o'zi yaratib beradi. Agar mahalliy kompyuteringizda
-> (yoki Mac'da) ishlashni xohlasangiz, shu papka ichida
-> `flutter create --platforms=ios .` buyrug'ini bir marta qo'lda ishga
-> tushiring.
+------------------------------
 
-## Codemagic'da sozlash qadamlari
 
-1. https://codemagic.io saytida ro'yxatdan o'ting va GitHub/GitLab/Bitbucket
-   orqali shu loyihani (bu papkani) reponi ulang.
-2. Loyihani import qilganda Codemagic `codemagic.yaml` faylini avtomatik
-   topib, "ios-workflow" ish oqimini ko'rsatadi.
-3. **Code signing** (App Store'ga chiqarish uchun majburiy):
-   - Apple Developer akkountingiz bo'lishi kerak (yillik $99).
-   - Codemagic -> Team settings -> Integrations -> **App Store Connect**
-     bo'limida Apple API kalitini ulang.
-   - Keyin loyiha sozlamalarida (Workflow -> Code signing -> iOS) avtomatik
-     signing'ni yoqing - Codemagic sertifikat va provisioning profilni
-     o'zi yaratadi.
-   - `codemagic.yaml`dagi `BUNDLE_ID` va `bundle_identifier` qiymatini
-     (`com.woodera.elektronhamyon`) o'zingizning Apple Developer
-     akkountingizdagi App ID bilan mos qiling.
-4. `publishing -> email -> recipients` qatoridagi email manzilni
-   o'zingiznikiga almashtiring (build tugagach xabar keladi).
-5. "Start new build" tugmasini bosing - Codemagic Flutter va Xcode
-   muhitini o'zi tayyorlab, `.ipa` faylini yig'ib beradi.
-6. Tayyor `.ipa` faylni TestFlight orqali telefoningizga o'rnatishingiz
-   yoki (ixtiyoriy) `app_store_connect` bo'limini yoqib, to'g'ridan-to'g'ri
-   TestFlight'ga avtomatik yuklashingiz mumkin.
 
-## Eslatma
+* pubspec.yaml — зависимости проекта (shared_preferences, intl).
+* lib/main.dart — пользовательский интерфейс приложения.
+* lib/wallet_engine.dart — основная логика расчётов и локального сохранения данных.
+* codemagic.yaml — проверенная конфигурация автоматической сборки Android-приложения.
 
-- Ma'lumotlar hozircha faqat telefon xotirasida (`shared_preferences`)
-  saqlanadi - internetga ulanish shart emas.
-- Agar 30 kunlik davr oxirida byudjetdan **oshib ketilgan** bo'lsa
-  (manfiy qoldiq), yangi davr 0 dan boshlanadi va "Oldingi davrda
-  limitdan oshgan summa" sifatida bosh sahifada ko'rsatiladi.
+------------------------------
+## 💻 Код конфигурации codemagic.yaml
+Этот файл используется системой Codemagic для автоматической сборки готового установочного файла из вашего GitHub-репозитория:
+
+workflows:
+  # ============== ANDROID ==============
+  android-workflow:
+    name: Elektron Hamyon - Android
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      vars:
+        PACKAGE_NAME: "com.woodera.elektronhamyon"
+    scripts:
+      - name: Flutter paketlarni o'rnatish
+        script: |
+          flutter packages pub get      - name: Android uchun APK yig'ish (release)
+        script: |
+          flutter build apk --release      - name: Android uchun AAB yig'ish (Play Store uchun, release)
+        script: |
+          flutter build appbundle --release    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+    publishing:
+      email:
+        recipients:
+          - nackroot.uz@gmail.com
+        notify:
+          success: true
+          failure: true
+
+------------------------------
+## 🚀 Сборка и установка через Codemagic
+
+   1. Откройте [Codemagic](https://codemagic.io/) и авторизуйтесь через свой GitHub / GitLab / Bitbucket.
+   2. Подключите ваш репозиторий с проектом elektron_hamyon.
+   3. Убедитесь, что в поле «Select file workflow» на панели управления выбран вариант Elektron Hamyon - Android.
+   4. Нажмите синюю кнопку «Start new build» (Начать новую сборку).
+   5. Подождите около 2–3 минут, пока система скомпилирует код (индикатор должен стать зеленым со статусом Законченный / Finished).
+   6. Прокрутите страницу сборки в самый низ до раздела Artifacts (Артефакты).
+   7. Нажмите на синюю ссылку с расширением .apk (например, app-release.apk), чтобы скачать готовое приложение.
+   8. Передайте скачанный .apk файл на телефон (через Telegram, карту памяти или кабель) и установите его. Приложение готово к работе!
+
+------------------------------
+
