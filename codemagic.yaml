@@ -1,0 +1,67 @@
+workflows:
+  # ============== ANDROID ==============
+  android-workflow:
+    name: Elektron Hamyon - Android
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      vars:
+        PACKAGE_NAME: "com.woodera.elektronhamyon"
+    scripts:
+      - name: Flutter paketlarni o'rnatish
+        script: |
+          flutter packages pub get
+      - name: Android uchun APK yig'ish (release)
+        script: |
+          flutter build apk --release
+      - name: Android uchun AAB yig'ish (Play Store uchun, release)
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+    publishing:
+      email:
+        recipients:
+          - nackroot.uz@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  # ============== IOS (Apple Developer akkaunti KERAK EMAS) ==============
+  # Bu workflow imzosiz .ipa yig'adi. Apple Developer Program ($99/yil)
+  # bo'lmagani uchun Codemagic o'zi imzolay olmaydi - shuning uchun imzoni
+  # keyinroq kompyuterda, bepul Sideloadly dasturi orqali, bepul Apple ID
+  # bilan qilamiz (pastdagi ko'rsatmaga qarang).
+  ios-workflow:
+    name: Elektron Hamyon - iOS (imzosiz)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Flutter paketlarni o'rnatish
+        script: |
+          flutter packages pub get
+      - name: iOS uchun imzosiz build
+        script: |
+          flutter build ios --release --no-codesign
+      - name: .ipa faylini qo'lda yig'ish
+        script: |
+          set -e
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ElektronHamyon-unsigned.ipa Payload
+    artifacts:
+      - build/ios/iphoneos/*.ipa
+    publishing:
+      email:
+        recipients:
+          - nackroot.uz@gmail.com
+        notify:
+          success: true
+          failure: true
