@@ -167,3 +167,5 @@ workflows:
    * Заархивируйте папку `Payload` обратно в ZIP-формат.
    * Переименуйте расширение полученного файла из `.zip` в `.ipa`.
 4. Установите готовый `.ipa` файл на iPhone бесплатно с помощью ПК через **Sideloadly / AltStore** (сброс каждые 7 дней) либо напрямую с телефона через сторонние менеджеры сертификатов (**Scarlet / ESign**).
+
+Электроный кошилек версия 1v https://drive.google.com/file/d/1BmZbDNO0uyUBi3n9KlBYMCfSR3tR_vc_/view?usp=sharing
